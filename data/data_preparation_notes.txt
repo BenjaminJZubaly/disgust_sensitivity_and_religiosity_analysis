@@ -1,0 +1,14 @@
+The following tracks the preparation of the dataset for our 2024 USRA project.
+- The raw dataset was downloaded from SurveyMonkey as .csv files (one with the numerical values and one with the actual answer text.
+- The Prolific IDs were removed from the datasets and replaced with randomly generated IDs in a new column "ID".
+- Both of these raw datasets were added to the repository as "./data/raw_anon_data_num.csv" and "./data/raw_anon_data_ans.csv". The latter will sit in the repository only for reference to how the numerical values in the former match up to the scale response items.
+- Then, the file "./data/prolific_participant_processing.csv" was added to the repository. This file includes all of the (anonymized) IDs that are to be removed from the dataset before analysis, along with which round they were recruited on Prolific and the reason for their exclusion. The IDs that were "Returned" were removed from the datasets, in accordance with our HREB approval.
+- Next, I made the initial commit to the GitHub repository.
+- Next, "./data/raw_anon_data_num.csv" was edited to prepare it for analysis:
+	- Unnecessary columns (Respondent ID, Collector ID, Email Address (blank), First Name (blank), Last Name (blank), Custom Data (blank), 
+	- The ID column was moved to the first place.
+	- The columns were renamed to shorter versions with lowercase letters and underscores. Items were renamed with the abbreviation of the scale and the number. The key to the variable names will be displayed at the top of the main analysis quarto document.
+	- It was noticed that some of the IDs that were entered into the datasets instead of Prolific IDs were taken with formatting of scientific notation. These were replaced by new random IDs in both datasets.
+	- Next, the second row of the spreadsheet that displayed the wording of the items was removed.
+	- The resulting dataset was saved as "./data/prepared_data.csv"
+

@@ -1,0 +1,402 @@
+---
+references:
+- id: aarts2015
+  author:
+  - family: Aarts
+    given: Alexander
+  - family: Anderson
+    given: Joanna
+  - family: Anderson
+    given: Christopher
+  - family: Attridge
+    given: Peter
+  - family: Attwood
+    given: Angela
+  - family: Axt
+    given: Jordan
+  - family: Babel
+    given: Molly
+  - family: Bahník
+    given: Štěpán
+  - family: Baranski
+    given: Erica
+  - family: Barnett-Cowan
+    given: Michael
+  - family: Bartmess
+    given: Elizabeth
+  - family: Beer
+    given: Jennifer
+  - family: Bell
+    given: Raoul
+  - family: Bentley
+    given: Heather
+  - family: Beyan
+    given: Leah
+  - family: Binion
+    given: Grace
+  - family: Borsboom
+    given: Denny
+  - family: Bosch
+    given: Annick
+  - family: Bosco
+    given: Frank
+  - family: Pen
+    given: Mike
+  container-title: Science
+  container-title-short: Science
+  DOI: 10.1126/science.aac4716
+  issued: 2015-08-27
+  key: PCVJPB6C
+  libraryID: 1
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  source: ResearchGate
+  title: Estimating the reproducibility of psychological science
+  type: article-journal
+  volume: 349
+- id: olatunji2012
+  author:
+  - family: Olatunji
+    given: Bunmi
+  - family: Adams
+    given: Thomas
+  - family: Ciesielski
+    given: Bethany
+  - family: David
+    given: Bieke
+  - family: Sarawgi
+    given: Shivali
+  - family: Broman-Fulks
+    given: Joshua
+  container-title: Assessment
+  container-title-short: Assessment
+  DOI: 10.1177/1073191111432881
+  issued: 2012-01-04
+  key: D8FEJPXW
+  libraryID: 1
+  page: 205-25
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  source: ResearchGate
+  title: The Three Domains of Disgust Scale
+  type: article-journal
+  volume: 19
+- id: huber2012
+  accessed: "19:24:38"
+  author:
+  - family: Huber
+    given: Stefan
+  - family: Huber
+    given: Odilo W.
+  container-title: Religions
+  DOI: 10.3390/rel3030710
+  ISSN: 2077-1444
+  issue: 3
+  issued: 2012-09
+  key: 6Q6F4VLI
+  language: en
+  libraryID: 1
+  Number: 3
+  page: 710-724
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  Publisher: Molecular
+  rights: "http://creativecommons.org/licenses/by/3.0/"
+  source: www.mdpi.com
+  title: The Centrality of Religiosity Scale (CRS)
+  type: article-journal
+  URL: "https://www.mdpi.com/2077-1444/3/3/710"
+  volume: 3
+- id: tybur2009
+  author:
+  - family: Tybur
+    given: J.M.
+  - family: Lieberman
+    given: D.L.
+  - family: Griskevicius
+    given: V.G.
+  container-title: Journal of Personality and Social Psychology
+  DOI: 10.1037/a0015474
+  ISSN: 0022-3514
+  issued: 2009
+  key: KNDMQYBR
+  libraryID: 1
+  page: 103-122
+  providerKey: Zotero
+  source: Vrije Universiteit Amsterdam
+  title: "Microbes, mating, and morality: Individual differences in
+    three functional domains of disgust"
+  title-short: Microbes, mating, and morality
+  type: article-journal
+  volume: 29
+- id: simpson1991
+  author:
+  - family: Simpson
+    given: J. A.
+  - family: Gangestad
+    given: S. W.
+  container-title: Journal of Personality and Social Psychology
+  container-title-short: J Pers Soc Psychol
+  DOI: 10.1037//0022-3514.60.6.870
+  ISSN: 0022-3514
+  issue: 6
+  issued: 1991-06
+  key: VCDAIWG9
+  language: eng
+  libraryID: 1
+  page: 870-883
+  PMID: 1865325
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  source: PubMed
+  title: "Individual differences in sociosexuality: evidence for
+    convergent and discriminant validity"
+  title-short: Individual differences in sociosexuality
+  type: article-journal
+  volume: 60
+- id: penke2008
+  accessed: "21:04:31"
+  archive_location: 2008-14857-008
+  author:
+  - family: Penke
+    given: Lars
+  - family: Asendorpf
+    given: Jens B.
+  container-title: Journal of Personality and Social Psychology
+  container-title-short: Journal of Personality and Social Psychology
+  DOI: 10.1037/0022-3514.95.5.1113
+  ISSN: 0022-3514
+  issue: 5
+  issued: 2008-11
+  key: KHWNBDJJ
+  libraryID: 1
+  page: 1113-1135
+  providerKey: Zotero
+  Publisher: American
+  source: EBSCOhost
+  title: "Beyond global sociosexual orientations: A more differentiated
+    look at sociosexuality and its effects on courtship and romantic
+    relationships: Journal of Personality and Social Psychology"
+  title-short: Beyond global sociosexual orientations
+  type: article-journal
+  URL: "https://twu.idm.oclc.org/login?url=https://search.ebscohost.com/login.aspx?direct=true&db=psyh&AN=2008-14857-008&site=ehost-live&scope=site"
+  volume: 95
+- id: neuliep1997
+  accessed: "17:50:18"
+  archive_location: 2024-65160-001
+  author:
+  - family: Neuliep
+    given: James W.
+  - family: McCroskey
+    given: James C.
+  container-title: Communication Research Reports
+  container-title-short: Communication Research Reports
+  DOI: 10.1080/08824099709388682
+  ISSN: 0882-4096
+  issue: 4
+  issued: 1997
+  key: E7BFQ322
+  libraryID: 1
+  page: 385-398
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  Publisher: Taylor
+  source: EBSCOhost
+  title: The development of a US and Generalized Ethnocentrism Scale
+  type: article-journal
+  URL: "https://twu.idm.oclc.org/login?url=https://search.ebscohost.com/login.aspx?direct=true&db=psyh&AN=2024-65160-001&site=ehost-live&scope=site"
+  volume: 14
+- id: neuliep2002
+  accessed: "20:12:15"
+  author:
+  - family: Neuliep
+    given: James W.
+  container-title: Journal of Intercultural Communication Research
+  ISSN: 17475759
+  issue: 4
+  issued: 2002-12
+  key: 4A3T6HI2
+  libraryID: 1
+  page: 201
+  providerKey: Zotero
+  Publisher: Taylor
+  source: EBSCOhost
+  title: Assessing the Reliability and Validity of the Generalized
+    Ethnocentrism Scale
+  type: article-journal
+  URL: "https://twu.idm.oclc.org/login?url=https://search.ebscohost.com/login.aspx?direct=true&db=ufh&AN=10966365&site=eds-live&scope=site"
+  volume: 31
+- id: duckitt2010
+  _eprint: "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-9221.2010.00781.x"
+  accessed: "02:03:21"
+  author:
+  - family: Duckitt
+    given: John
+  - family: Bizumic
+    given: Boris
+  - family: Krauss
+    given: Stephen W.
+  - family: Heled
+    given: Edna
+  container-title: Political Psychology
+  DOI: 10.1111/j.1467-9221.2010.00781.x
+  ISSN: 1467-9221
+  issue: 5
+  issued: 2010
+  key: 2MPU5L6E
+  language: en
+  libraryID: 1
+  note: "\\_eprint:
+    https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-9221.2010.00781.x"
+  page: 685-715
+  providerKey: Zotero
+  rights: © 2010 International Society of Political Psychology
+  source: Wiley Online Library
+  title: "A Tripartite Approach to Right-Wing Authoritarianism: The
+    Authoritarianism-Conservatism-Traditionalism Model"
+  title-short: A Tripartite Approach to Right-Wing Authoritarianism
+  type: article-journal
+  URL: "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-9221.2010.00781.x"
+  volume: 31
+- id: dunwoody2016
+  accessed: "01:19:21"
+  author:
+  - family: Dunwoody
+    given: Philip T.
+  - family: Funke
+    given: Friedrich
+  container-title: Journal of Social and Political Psychology
+  DOI: 10.5964/jspp.v4i2.168
+  ISSN: 2195-3325
+  issue: 2
+  issued: 2016-08-25
+  key: NQCBEHTK
+  language: en
+  libraryID: 1
+  Number: 2
+  page: 571-600
+  providerKey: Zotero
+  rights: Copyright (c)
+  source: jspp.psychopen.eu
+  title: "The Aggression-Submission-Conventionalism Scale: Testing a New
+    Three Factor Measure of Authoritarianism"
+  title-short: The Aggression-Submission-Conventionalism Scale
+  type: article-journal
+  URL: "https://jspp.psychopen.eu/index.php/jspp/article/view/4955"
+  volume: 4
+- id: beribisky2020
+  archive_location: 2020-99400-001
+  author:
+  - family: Beribisky
+    given: Nataly
+  - family: Mara
+    given: Constance A.
+  - family: Cribbie
+    given: Robert A.
+  container-title: The Quantitative Methods for Psychology
+  container-title-short: The Quantitative Methods for Psychology
+  DOI: 10.20982/tqmp.16.4.p424
+  ISSN: 2292-1354
+  issue: 5
+  issued: 2020
+  key: CTSI6PB8
+  libraryID: 1
+  page: 424-441
+  providerKey: Zotero
+  Publisher: The
+  source: EBSCOhost
+  title: An equivalence testing approach for evaluating substantial
+    mediation
+  type: article-journal
+  volume: 16
+- id: ripley2024
+  accessed: "18:21:29"
+  author:
+  - family: Ripley
+    given: Brian
+  - family: Venables
+    given: Bill
+  - family: Bates
+    given: Douglas M.
+  - dropping-particle: port
+    family: 1998)
+    given: Kurt Hornik (partial
+    non-dropping-particle: ca
+  - dropping-particle: port
+    family: 1998)
+    given: Albrecht Gebhardt (partial
+    non-dropping-particle: ca
+  - dropping-particle: functions for
+    family: polr)
+    given: David Firth (support
+  issued: 2024-06-13
+  key: ZD5TY9A3
+  libraryID: 1
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  rights: GPL-2 \| GPL-3
+  source: R-Packages
+  title: "MASS: Support Functions and Datasets for Venables and Ripley's
+    MASS"
+  title-short: MASS
+  type: book
+  URL: "https://cran.r-project.org/web/packages/MASS/index.html"
+  versionNumber: 7.3-61
+- id: yu2022
+  _eprint: "https://onlinelibrary.wiley.com/doi/pdf/10.1111/bjso.12479"
+  accessed: "19:32:13"
+  author:
+  - family: Yu
+    given: Zhaoliang
+  - family: Bali
+    given: Persefoni
+  - family: Tsikandilakis
+    given: Myron
+  - family: Tong
+    given: Eddie M. W.
+  container-title: British Journal of Social Psychology
+  DOI: 10.1111/bjso.12479
+  ISSN: 2044-8309
+  issue: 1
+  issued: 2022
+  key: ZKCSTW3C
+  language: en
+  libraryID: 1
+  note: "\\_eprint:
+    https://onlinelibrary.wiley.com/doi/pdf/10.1111/bjso.12479"
+  page: 276-299
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  rights: © 2021 The Authors. British Journal of Social Psychology
+    published by John Wiley & Sons Ltd on behalf of British
+    Psychological Society
+  source: Wiley Online Library
+  title: "\"Look not at what is contrary to propriety\": A meta-analytic
+    exploration of the association between religiosity and sensitivity
+    to disgust"
+  title-short: "\"Look not at what is contrary to propriety\""
+  type: article-journal
+  URL: "https://onlinelibrary.wiley.com/doi/abs/10.1111/bjso.12479"
+  volume: 61
+- id: baron1986
+  accessed: "00:04:58"
+  archive_location: 1987-13085-001
+  author:
+  - family: Baron
+    given: Reuben M.
+  - family: Kenny
+    given: David A.
+  container-title: Journal of Personality and Social Psychology
+  container-title-short: Journal of Personality and Social Psychology
+  DOI: 10.1037/0022-3514.51.6.1173
+  ISSN: 0022-3514
+  issue: 6
+  issued: 1986-12
+  key: ESS3PJME
+  libraryID: 1
+  page: 1173-1182
+  providerKey: Zotero
+  Publisher: American
+  source: EBSCOhost
+  title: "The moderator--mediator variable distinction in social
+    psychological research: Conceptual, strategic, and statistical
+    considerations"
+  title-short: The moderator--mediator variable distinction in social
+    psychological research
+  type: article-journal
+  URL: "https://twu.idm.oclc.org/login?url=https://search.ebscohost.com/login.aspx?direct=true&db=psyh&AN=1987-13085-001&site=ehost-live&scope=site"
+  volume: 51
+...
