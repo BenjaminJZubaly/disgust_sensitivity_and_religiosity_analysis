@@ -2646,6 +2646,1890 @@ summary(H2_2_mediate_results)
 
     -   This result is inconsistent with both the weak and strong version version of Hypothesis 2. That is, there is no evidence here that the relationship between pathogen disgust and religiosity is mediated by out-group avoidance.
 
+## Data Preparation for Standardized Residuals
+
+Now we will rerun the analyses after ensuring that covariance between our mediating variables could not account for the results above. That is, we will regress each of the mediator on the other two and save standardized residuals. Then, we will run the mediation analyses again. This will help to explore whether any mediation effects (or null effects) in our previous analyses could have been due to covariation between our mediating variables. First, let us calculate our standardized residuals.
+
+```{r}
+# Create the regression models for standardized residuals
+  # For traditionalism
+res_model_CONV_f <- lm(CONV_f ~ SOI_a_r + GENE_p, data = data)
+  # For out-group avoidance
+res_model_GENE_p <- lm(GENE_p ~ CONV_f + SOI_a_r, data = data)
+  # For sexual strategies
+res_model_SOI_a_r <- lm(SOI_a_r ~ GENE_p + CONV_f, data = data)
+
+# Add the standardized residuals to the new data frame, aligning them with the full rows
+  # Initializing new variables with NA values first
+data$res_CONV_f <- NA   # Initialize new variable with NAs for traditionalism
+data$res_GENE_p <- NA   # Initialize new variable with NAs for out-group avoidance
+data$res_SOI_a_r <- NA
+  # Add the standardized residuals to the res_CONV_f variable
+data$res_CONV_f <- rstandard(res_model_CONV_f)
+  # Add the standardized residuals to the res_GENE_p variable
+data$res_GENE_p <- rstandard(res_model_GENE_p)
+  # Add the standardized residuals to the res_SOI_a_r variable
+data$res_SOI_a_r <- rstandard(res_model_SOI_a_r)
+
+# Ensure that the variables are plain numeric vectors
+data$res_CONV_f <- as.numeric(data$res_CONV_f)
+data$res_GENE_p <- as.numeric(data$res_GENE_p)
+data$res_SOI_a_r <- as.numeric(data$res_SOI_a_r)
+```
+
+## Hypothesis 1: Standardized Residuals
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test Hypothesis 1, we must first establish that pathogen disgust affects adherence to traditional practices (in this case the standardized residuals version; `res_CONV_f`) and that adherence to traditional practices influences religiosity.
+
+```{r}
+# Fitting the models
+H1_M1_res <- lm(res_CONV_f ~ TDDS_p_z, data = data)
+H1_M2_res <- lm(CRS_z ~ res_CONV_f, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H1_M1_res, which = 1) # For model 1
+    plot(H1_M2_res, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for the first model, but there is a trend towards more negative residual values at the higher fitted values of the model for model 2. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H1_M1_res)) # For model 1
+    hist(residuals(H1_M2_res)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(H1_M1_res))
+    qqline(residuals(H1_M1_res), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(H1_M2_res))
+    qqline(residuals(H1_M2_res), col = "red")
+    ```
+
+    -   **Model 1:**
+
+        -   The histogram and QQ-plot suggest that the residuals are normally distributed for Model 1.
+
+    -   **Model 2:**
+
+        -   The histogram and QQ-plot of the residuals of Model 2 indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just above -1 SD and just above 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictor for Model 2.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$TDDS_p_z, data$res_CONV_f,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Traditionalism Standardized Residuals",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H1_M1_res, col = "black", lwd = 1)
+
+# Summarizing the model
+summary(H1_M1_res)
+```
+
+-   We can see from the Scatter Plot that there is no relationship between pathogen disgust and traditionalism to speak of (*B* = -.027, *t*(287) = .461, *p* = .645), just as with the analysis above.
+
+    -   Although this precludes the possibility that adherence to tradition mediates the relationship between disgust and religiosity, we will continue with the analysis for completions sake.
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$res_CONV_f, data$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Traditionalism Standardized Residuals",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H1_M2_res, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+res_CONV_f <- as.numeric(data$res_CONV_f)
+CRS_z <- as.numeric(data$CRS_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H1_M2_res <- Boot(H1_M2_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H1_M2_res) # Getting the coefficients
+confint(boot_H1_M2_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_CONV_f, CRS_z)
+```
+
+-   We can see from the Scatter Plot that there is a positive relationship between traditionalism and religiosity.
+
+-   Based on the estimates, the standardized coefficient for traditionalism is around .25.
+
+    -   In addition, this relationship is significant, as the BCIs do not contain zero (upper = .36, lower = .14).
+
+### Full Mediation Model
+
+The fact that pathogen disgust does not predict traditionalism indicates that traditionalism could not mediate the relationship between pathogen disgust and religiosity, but I will run the analysis that we planned anyway just to have the results.
+
+```{r}
+# Fitting the full mediation model
+H1_full_res <- lm(CRS_z ~ TDDS_p_z + res_CONV_f, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H1_full_res, which = 1)
+    ```
+
+    -   There is a trend towards more negative residual values at the higher fitted values of the model. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H1_full_res))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(H1_full_res))
+    qqline(residuals(H1_full_res), col = "red")
+    ```
+
+    -   The histogram and QQ-plot of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just above -1 SD and around 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictors for the model.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(H1_full_res)
+    ```
+
+    -   The VIF is good here.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+res_CONV_f <- as.numeric(data$res_CONV_f)
+CRS_z <- as.numeric(data$CRS_z)
+TDDS_p_z <- as.numeric(data$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H1_full_res <- Boot(H1_full_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H1_full_res) # Getting the coefficients
+confint(boot_H1_full_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_CONV_f, CRS_z, TDDS_p_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+H1_mediate_results_res <- mediate(model.m = H1_M1_res,
+        model.y = H1_full_res,
+        treat = "TDDS_p_z",
+        mediator = "res_CONV_f",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results for the mediation analysis
+summary(H1_mediate_results_res)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs not containing zero, both pathogen disgust and traditionalism are significantly positively related to religiosity.
+
+    -   The coefficients for pathogen disgust (.25) and traditionalism (.26) are close to how they are in the models above where they are stand-alone predictors. This suggests that the unique effects of pathogen disgust and traditionalism on religiosity over-and-above each other are independent effects.
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is no significant indirect effect of pathogen disgust on religiosity through traditionalism (*B* = -.007, *BCI* = \[-.038, .03\]).
+
+    -   This result is inconsistent with both the weak and strong version version of Hypothesis 1. That is, there is no evidence here that the relationship between pathogen disgust and religiosity is mediated by traditionalism, even after removing covariation with the other potentially mediating variables.
+
+## Hypothesis 2: Standardized Residuals
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test Hypothesis 2, we must first establish that pathogen disgust affects out-group avoidance (i.e., the standardized residual version of `res_GENE_p`) and that out-group avoidance influences religiosity.
+
+```{r}
+# Fitting the models
+H2_M1_res <- lm(res_GENE_p ~ TDDS_p_z, data = data)
+H2_M2_res <- lm(CRS_z ~ res_GENE_p, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H2_M1_res, which = 1) # For model 1
+    plot(H2_M2_res, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for the either model.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H2_M1_res)) # For model 1
+    hist(residuals(H2_M2_res)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(H2_M1_res))
+    qqline(residuals(H2_M1_res), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(H2_M2_res))
+    qqline(residuals(H2_M2_res), col = "red")
+    ```
+
+    -   **Model 1:**
+
+        -   The histogram and QQ-plot suggest that the residuals are relatively normally distributed for Model 1.
+
+    -   **Model 2:**
+
+        -   The histogram and QQ-plot of the residuals of Model 2 indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just above -1 SD and just above 1 or 1.5 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictor for Model 2.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$TDDS_p_z, data$res_GENE_p,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Out-Group Avoidance (res_GENE_p) Standardized Residuals",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H2_M1_res, col = "black", lwd = 1)
+
+# Summarizing the model
+summary(H2_M1_res)
+```
+
+-   We can see from the Scatter Plot that there is no relationship between pathogen disgust and out-group avoidance to speak of (*B* = -.017, *t*(287) = -.296, *p* = .767), just as with the correlation above.
+
+    -   Although this precludes the possibility that out-group avoidance mediates the relationship between disgust and religiosity, we will continue with the analysis for completions sake.
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$res_GENE_p, data$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Out-Group Avoidance (GENE_p)",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H2_M2_res, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+res_GENE_p <- as.numeric(data$res_GENE_p)
+CRS_z <- as.numeric(data$CRS_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H2_M2_res <- Boot(H2_M2_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H2_M2_res) # Getting the coefficients
+confint(boot_H2_M2_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_GENE_p, CRS_z)
+```
+
+-   We can see from the Scatter Plot that there no relationship.
+
+-   Based on the estimates, the standardized coefficient for out-group avoidance is around .01.
+
+    -   This relationship is not significant, as the BCI contains zero (upper = .13, lower = -.12).
+
+### Full Mediation Model
+
+The fact that pathogen disgust does not predict out-group avoidance and, in turn, out-group avoidance does not predict religiosity indicates that out-group avoidance could not mediate the relationship between pathogen disgust and religiosity, but I will run the analysis that we planned anyway just to have the results.
+
+```{r}
+# Fitting the full mediation model
+H2_full_res <- lm(CRS_z ~ TDDS_p_z + res_GENE_p, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H2_full_res, which = 1)
+    ```
+
+    -   There is a trend towards more negative residual values at the higher fitted values of the model. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H2_full_res))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(H2_full_res))
+    qqline(residuals(H2_full_res), col = "red")
+    ```
+
+    -   The histogram and QQ-plot of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just above -1 SD and just above 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictors for the model.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(H2_full_res)
+    ```
+
+    -   The VIF is good here.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+res_GENE_p <- as.numeric(data$res_GENE_p)
+CRS_z <- as.numeric(data$CRS_z)
+TDDS_p_z <- as.numeric(data$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H2_full_res <- Boot(H2_full_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H2_full_res) # Getting the coefficients
+confint(boot_H2_full_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_GENE_p, CRS_z, TDDS_p_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+H2_mediate_results_res <- mediate(model.m = H2_M1_res,
+        model.y = H2_full_res,
+        treat = "TDDS_p_z",
+        mediator = "res_GENE_p",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results of the mediation analysis
+summary(H2_mediate_results_res)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs, pathogen disgust, but not out-group avoidance, is significantly positively related to religiosity.
+
+    -   The coefficients for pathogen disgust (.24) and out-group avoidance (.-.006) are very similar in this model to the models above where they are stand-alone predictors.
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is no significant indirect effect of pathogen disgust on religiosity through out-group avoidance (*B* = .0001, *BCI* = \[-.006, .01\]).
+
+    -   This result is inconsistent with both the weak and strong version version of Hypothesis 2. That is, there is no evidence here that the relationship between pathogen disgust and religiosity is mediated by out-group avoidance, even when using the standardized residuals.
+
+## Hypothesis 3: Standardized Residuals
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test Hypothesis 3, we must first establish that pathogen disgust affects one's mating strategy (i.e., make it more monogamous; as measured by more restricted sociosexuality; in this case the standardized residuals version `res_SOI_a_r`) and that a monogamous mating strategy influences religiosity.
+
+```{r}
+# Fitting the models
+H3_M1_res <- lm(res_SOI_a_r ~ TDDS_p_z, data = data)
+H3_M2_res <- lm(CRS_z ~ res_SOI_a_r, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H3_M1_res, which = 1) # For model 1
+    plot(H3_M2_res, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for the first model, but there is a negative trend for residuals for the second model.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H3_M1_res)) # For model 1
+    hist(residuals(H3_M2_res)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(H3_M1_res))
+    qqline(residuals(H3_M1_res), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(H3_M2_res))
+    qqline(residuals(H3_M2_res), col = "red")
+    ```
+
+    -   **Both Models:**
+
+        -   The QQ-plots for both models do not indicate that the residuals are normally distributed.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictor for both models.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$TDDS_p_z, data$res_SOI_a_r,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Restricted Sociosexual Attitudes",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H3_M1_res, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+res_SOI_a_r <- as.numeric(data$res_SOI_a_r)
+TDDS_p_z <- as.numeric(data$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H3_M1_res <- Boot(H3_M1_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H3_M1_res) # Getting the coefficients
+confint(boot_H3_M1_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_SOI_a_r, TDDS_p_z)
+```
+
+-   We can see from the Scatter Plot that there is a positive relationship between pathogen disgust and restricted sociosexual attitudes.
+
+-   Based on the estimates, the standardized coefficient for pathogen disgust is around .22.
+
+    -   In addition, this relationahip is significant, as the BCI excludes zero (upper = .34, lower = .11).
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$res_SOI_a_r, data$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Restricted Sociosexual Attitudes",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H3_M2_res, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+res_SOI_a_r <- as.numeric(data$res_SOI_a_r)
+CRS_z <- as.numeric(data$CRS_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H3_M2_res <- Boot(H3_M2_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H3_M2_res) # Getting the coefficients
+confint(boot_H3_M2_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_SOI_a_r, CRS_z)
+```
+
+-   We can see from the Scatter Plot that there is a positive trend in the relationship between restricted sociosexual attitudes and religiosity.
+
+-   Based on the estimates, the standardized coefficient for restricted sociosexual attitudes is around .36.
+
+    -   In addition, this relationahip is significant, as the BCI excludes zero (upper = .47, lower = .24).
+
+### Full Mediation Model
+
+The fact that pathogen disgust predicts a monogamous mating strategy and, in turn, a monogamous mating strategy predicts religiosity indicates that a monogamous mating strategy could potentially mediate the relationship between pathogen disgust and religiosity. Now we will run the mediation analysis.
+
+```{r}
+# Fitting the full mediation model
+H3_full_res <- lm(CRS_z ~ TDDS_p_z + res_SOI_a_r, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H3_full_res, which = 1)
+    ```
+
+    -   There is a trend towards more negative residual values at the higher fitted values of the model. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H3_full_res))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(H3_full_res))
+    qqline(residuals(H3_full_res), col = "red")
+    ```
+
+    -   The histogram and QQ-plot of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just above -1 SD and just above 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictors for the model.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(H3_full_res)
+    ```
+
+    -   The VIF is good here.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+res_SOI_a_r <- as.numeric(data$res_SOI_a_r)
+CRS_z <- as.numeric(data$CRS_z)
+TDDS_p_z <- as.numeric(data$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H3_full_res <- Boot(H3_full_res, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H3_full_res) # Getting the coefficients
+confint(boot_H3_full_res) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(res_SOI_a_r, CRS_z, TDDS_p_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+H3_mediate_results_res <- mediate(model.m = H3_M1_res,
+        model.y = H3_full_res,
+        treat = "TDDS_p_z",
+        mediator = "res_SOI_a_r",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results of the mediation analysis
+summary(H3_mediate_results_res)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs, both pathogen disgust and restricted sociosexual attitudes are significantly positively related to religiosity, with the unique effect of restricted sociosexual attitudes being substantially larger (*B* = .325, *BCI* =\[.202, .441\]) than the unique effect of pathogen disgust (*B* = .17, *BCI* = \[.062, .289\]).
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is a significant indirect effect of pathogen disgust on religiosity through a monogamous mating strategy (*B* = .07, *BCI* = \[.03, .12\]).
+
+        -   Given this result, we have evidence for the weak version of Hypothesis 3. That is, the relationship between pathogen disgust and religiosity is partially mediated by a monogamous mating strategy.
+
+    -   The proportion of the total effect mediated (the ratio of the indirect effect to the direct effect) is .30. That is, 30% of the covariance between pathogen disgust and religiosity seems to be able to be accounted for by restricted sociosexual attitudes. Our inferential criterion for concluding full mediation was that this ratio would be at least .80, with the total effect greater than a *B* = .2. Even the upper bound of the bootstrapped confidence interval for this proportion mediated does not cross this threshold (*BCI* = \[.13, .57\]).
+
+        -   Given this result, we do not have evidence for the strong version of Hypothesis 3. That is, the relationship between pathogen disgust and religiosity is not fully mediated by a monogamous mating strategy.
+
+Ultimately, the results of reconducting the analysis with standardized residuals reinforces the results of the analysis thus far.
+
+# Exploratory Analyses for RBB Reviewers
+
+After receiving helpful suggestions from the reviewers at Religion, Brain and Behavior, we have decided to conduct a number of exploratory analyses that will disambiguate the findings here.
+
+1.  Reviewer 1 pointed out that almost half the sample indicate no religious affiliation and that we should present results with and without this group. This will be helpful to better characterize our results. Do individual differences in disgust sensitivity relate, through sexual strategies, to whether someone is or is not religious? Or do individual differences in disgust sensitivity relate, through sexual strategies, to someone's degree of religiosity? By performing the analyses again on only the explicitly religious participants, we can address these questions.
+2.  Reviewer 1 also points out that BIS reactivity may encourage traditional cultural values (like religion) as a means of mitigating social behaviors (like sex) that are more likely to result in the spread of infectious disease. To assess this, they suggest analyzing whether sociosexual attitudes mediate the relation between sexual disgust and traditionalism, as traditionalism shows a bivariate relationship with sexual disgust above. We will address this with additional analyses.
+3.  Lastly, Reviewer 2 expressed concerns about population differences in disgust sensitivity and religiosity spuriously creating a relationship between disgust and religiosity at the individual level. That is, even if there is a true null relationshiop between disgust and religiosity at the individual-level within countries, the presence of one or more sampled nations where there is high disgust and high religiosity levels could result in observing a relationship between disgust and religiosity at the individual level that simply doesn't exist. Reviewer 2 does not see a resolution to this issue. We will explore different models (e.g., a multilevel model with random intercepts to account for regional variation in the data) to try to determine whether this is the case.
+
+## Data Preparation for Religious Subgroup Analyses
+
+Before testing our hypotheses with only religious people, we will filter only those that indicated that they are religious
+
+```{r}
+# Filter data to include only religious participants (excludes "None", "Anti-religious", "Athiest")
+data_rel <- data %>%
+  filter(religious_affiliation %in% c("Christian", "Muslim", "Buddhist", 
+                                      "Hindu", "Pagan", "Spiritual", "Spiritualist", "Deist"))
+
+# Reversing the scoring for the SOI_a (saving it as SOI_a_r) and standardizing all variables
+data_rel <- data_rel %>% 
+  mutate(
+    SOI_a_r = (max(data_rel$SOI_a) + 1) - SOI_a,
+    SOI_a_r_z = scale(SOI_a_r),
+    CRS_z = scale(CRS),
+    religious_importance_z = scale(religious_importance),
+    GENE_p_z = scale(GENE_p),
+    GENE_p_2_z = scale(GENE_p_2),
+    CONV_f_z = scale(CONV_f),
+    TDDS_p_z = scale(TDDS_p)
+  )
+
+# Ensure that the variables are plain numeric vectors
+data_rel$TDDS_p_z <- as.numeric(data_rel$TDDS_p_z)
+data_rel$CONV_f_z <- as.numeric(data_rel$CONV_f_z)
+data_rel$CRS_z <- as.numeric(data_rel$CRS_z)
+data_rel$SOI_a_r_z <- as.numeric(data_rel$SOI_a_r_z)
+data_rel$religious_importance_z <- as.numeric(data_rel$religious_importance_z)
+data_rel$GENE_p_z <- as.numeric(data_rel$GENE_p_z)
+data_rel$GENE_p_2_z <- as.numeric(data_rel$GENE_p_2_z)
+
+# Because the boot function was throwing a fit about this earlier
+CRS_z <- as.numeric(data_rel$CRS_z)
+TDDS_p_z <- as.numeric(data_rel$TDDS_p_z)
+```
+
+Now, there is *n* = 141 participants for analysis here. All are religious.
+
+## Testing the Baseline Model
+
+Before moving on, we will first test the baseline model where we regress the dependent variable (`CRS`) on the independent variable (`TDDS_p`), because each mediation analysis requires that there is a significant positive relationship between these variables. We will also test each of the assumptions.
+
+```{r}
+# Fitting the model
+baseline_model_rel <- lm(CRS_z ~ TDDS_p_z, data = data_rel)
+```
+
+### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(baseline_model_rel, which = 1)
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(baseline_model_rel))
+
+    # QQ-plot for normality of residuals
+    qqnorm(residuals(baseline_model_rel))
+    qqline(residuals(baseline_model_rel), col = "red")
+    ```
+
+    -   The histogram of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a tendency for higher frequencies of residuals at both just above -1 SD and just below 1 SD.
+
+    -   Because our inferential criteria do not require parametric tests, we should not be in too much trouble with a non-normality of residuals. We were relying on a parametric t-test to assess whether pathogen disgust is related to religiosity in the first place, however. Because we have failed the assumption of normality of residuals, we will use a bootstrapped test to make our inference here as well.
+
+3.  **Multicollinearity:** Not applicable becuase only one predictor
+
+### Summarizing the Model
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$TDDS_p_z, data_rel$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(baseline_model_rel, col = "black", lwd = 1)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_baseline_model_rel <- Boot(baseline_model_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_baseline_model_rel) # Getting the coefficients
+confint(boot_baseline_model_rel) # Getting the BCIs
+
+# Removing the CRS_z and TDDS_p_z vectors in the environment that the Boot package required outside of the data.frame
+rm(CRS_z, TDDS_p_z)
+```
+
+-   We can see from the Scatter Plot that there is a positive relationship between pathogen disgust and religiosity.
+
+-   Based on the estimates, the standardized coefficient for pathogen disgust is around .31. This is slightly higher than for the whole sample, including non-religious people (with was .24).
+
+    -   In addition, this relationship is significant, as the BCIs do not contain zero (upper = .47, lower = .15).
+
+This shows that the IV effects the DV, as in the second regression equation for testing mediation in @baron1986. To establish mediation, we will still need to establish that the IV affects the mediator and the mediator affects the DV. Before we test the indirect effect and proportion of variance explained by each effect for each mediation model, we will run these two models.
+
+## Hypothesis 1: Religious Subgroup Analyses
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test Hypothesis 1, we must first establish that pathogen disgust affects adherence to traditional practices (i.e., `CONV_f_z`) and that adherence to traditional practices influences religiosity.
+
+```{r}
+# Fitting the models
+H1_M1_rel <- lm(CONV_f_z ~ TDDS_p_z, data = data_rel)
+H1_M2_rel <- lm(CRS_z ~ CONV_f_z, data = data_rel)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H1_M1_rel, which = 1) # For model 1
+    plot(H1_M2_rel, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for either model.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H1_M1_rel)) # For model 1
+    hist(residuals(H1_M2_rel)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(H1_M1_rel))
+    qqline(residuals(H1_M1_rel), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(H1_M2_rel))
+    qqline(residuals(H1_M2_rel), col = "red")
+    ```
+
+    -   **Model 1:**
+
+        -   The histogram and QQ-plot suggest that the residuals are normally distributed for Model 1.
+
+    -   **Model 2:**
+
+        -   The histogram and QQ-plot of the residuals of Model 2 indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just below 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictor for Model 2.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$TDDS_p_z, data_rel$CONV_f_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Traditionalism",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H1_M1_rel, col = "black", lwd = 1)
+
+# Summarizing the model
+summary(H1_M1_rel)
+```
+
+-   We can see from the Scatter Plot that there is a slight negative relationship between pathogen disgust and traditionalism, but this relationship is not significant (*B* = -.07, *t*(139) = -.887, *p* = .377).
+
+    -   This negative result (while there is a null relationship in the population) could be an artifact of collider bias, where to be religious you could either be traditional or disgust sensitive and therefore in the population of religious people there is a slight negative relationship between these.
+
+    -   Although this precludes the possibility that adherence to tradition mediates the relationship between disgust and religiosity, we will continue with the analysis for completions sake.
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$CONV_f_z, data_rel$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Traditionalism",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H1_M2_rel, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+CONV_f_z <- as.numeric(data_rel$CONV_f_z)
+CRS_z <- as.numeric(data_rel$CRS_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H1_M2_rel <- Boot(H1_M2_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H1_M2_rel) # Getting the coefficients
+confint(boot_H1_M2_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(CONV_f_z, CRS_z)
+```
+
+-   We can see from the Scatter Plot that there is a slight positive relationship between traditionalism and religiosity.
+
+-   Based on the estimates, the standardized coefficient for traditionalism is around .09.
+
+    -   However, this relationship is not significant, as the BCIs contain zero (upper = .25, lower = -.10).
+
+### Full Mediation Model
+
+The fact that pathogen disgust does not predict traditionalism indicates that traditionalism could not mediate the relationship between pathogen disgust and religiosity, but I will run the analysis that we planned anyway just to have the results.
+
+```{r}
+# Fitting the full mediation model
+H1_full_rel <- lm(CRS_z ~ TDDS_p_z + CONV_f_z, data = data_rel)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H1_full_rel, which = 1)
+    ```
+
+    -   There is a trend towards more negative residual values at the higher fitted values of the model. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H1_full_rel))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(H1_full_rel))
+    qqline(residuals(H1_full_rel), col = "red")
+    ```
+
+    -   The histogram and QQ-plot of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a tendency for higher frequencies of residuals at both just above -1 SD and just below 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictors for the model.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(H1_full_rel)
+    ```
+
+    -   The VIF is good here.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+CONV_f_z <- as.numeric(data_rel$CONV_f_z)
+CRS_z <- as.numeric(data_rel$CRS_z)
+TDDS_p_z <- as.numeric(data_rel$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H1_full_rel <- Boot(H1_full_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H1_full_rel) # Getting the coefficients
+confint(boot_H1_full_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(CONV_f_z, CRS_z, TDDS_p_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+H1_mediate_results_rel <- mediate(model.m = H1_M1_rel,
+        model.y = H1_full_rel,
+        treat = "TDDS_p_z",
+        mediator = "CONV_f_z",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results for the mediation analysis
+summary(H1_mediate_results_rel)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs not containing zero, pathogen disgust, but not traditionalism, is significantly positively related to religiosity.
+
+    -   The coefficients: for pathogen disgust (.32) and traditionalism (.11).
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is no significant indirect effect of pathogen disgust on religiosity through traditionalism (*B* = -.008, *BCI* = \[-.044, .02\]).
+
+    -   This result is inconsistent with both the weak and strong version version of Hypothesis 1. That is, there is no evidence here that the relationship between pathogen disgust and religiosity is mediated by traditionalism, including when looking at religious people only.
+
+## Hypothesis 2: Religious Subgroup Analyses
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test Hypothesis 2, we must first establish that pathogen disgust affects out-group avoidance (i.e., `GENE_p_z`) and that out-group avoidance influences religiosity.
+
+```{r}
+# Fitting the models
+H2_M1_rel <- lm(GENE_p_z ~ TDDS_p_z, data = data_rel)
+H2_M2_rel <- lm(CRS_z ~ GENE_p_z, data = data_rel)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H2_M1_rel, which = 1) # For model 1
+    plot(H2_M2_rel, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for the either model.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H2_M1_rel)) # For model 1
+    hist(residuals(H2_M2_rel)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(H2_M1_rel))
+    qqline(residuals(H2_M1_rel), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(H2_M2_rel))
+    qqline(residuals(H2_M2_rel), col = "red")
+    ```
+
+    -   **Model 1:**
+
+        -   The histogram and QQ-plot suggest that the residuals are relatively normally distributed for Model 1.
+
+    -   **Model 2:**
+
+        -   The histogram and QQ-plot of the residuals of Model 2 indicate that the residuals are not normally distributed. That is, there is a strong tendency for higher frequencies of residuals at both just below th mean and just below 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictor for Model 2.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$TDDS_p_z, data_rel$GENE_p_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Out-Group Avoidance (GENE_p)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H2_M1_rel, col = "black", lwd = 1)
+
+# Summarizing the model
+summary(H2_M1_rel)
+```
+
+-   We can see from the Scatter Plot that there is no relationship between pathogen disgust and out-group avoidance to speak of (*B* = .057, *t*(139) = .678, *p* = .499).
+
+    -   Although this precludes the possibility that out-group avoidance mediates the relationship between disgust and religiosity, we will continue with the analysis for completions sake.
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$GENE_p_z, data_rel$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Out-Group Avoidance (GENE_p)",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H2_M2_rel, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+GENE_p_z <- as.numeric(data_rel$GENE_p_z)
+CRS_z <- as.numeric(data_rel$CRS_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H2_M2_rel <- Boot(H2_M2_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H2_M2_rel) # Getting the coefficients
+confint(boot_H2_M2_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(GENE_p_z, CRS_z)
+```
+
+-   We can see from the Scatter Plot that there is a negative trend in the relationship between out-group avoidance and religiosity.
+
+    -   Could be due to collider bias.
+
+-   Based on the estimates, the standardized coefficient for out-group avoidance is around -.05.
+
+    -   However, this relationship is not significant, as the BCI contains zero (upper = .12, lower = -.24).
+
+### Full Mediation Model
+
+The fact that pathogen disgust does not predict out-group avoidance and, in turn, out-group avoidance does not predict religiosity indicates that out-group avoidance could not mediate the relationship between pathogen disgust and religiosity, but I will run the analysis that we planned anyway just to have the results.
+
+```{r}
+# Fitting the full mediation model
+H2_full_rel <- lm(CRS_z ~ TDDS_p_z + GENE_p_z, data = data_rel)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H2_full_rel, which = 1)
+    ```
+
+    -   There is a slight trend towards more negative residual values at the higher fitted values of the model. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H2_full_rel))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(H2_full_rel))
+    qqline(residuals(H2_full_rel), col = "red")
+    ```
+
+    -   The histogram and QQ-plot of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a tendency for higher frequencies of residuals at both just above -1 SD and just below 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictors for the model.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(H2_full_rel)
+    ```
+
+    -   The VIF is good here.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+GENE_p_z <- as.numeric(data_rel$GENE_p_z)
+CRS_z <- as.numeric(data_rel$CRS_z)
+TDDS_p_z <- as.numeric(data_rel$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H2_full_rel <- Boot(H2_full_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H2_full_rel) # Getting the coefficients
+confint(boot_H2_full_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(GENE_p_z, CRS_z, TDDS_p_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+H2_mediate_results_rel <- mediate(model.m = H2_M1_rel,
+        model.y = H2_full_rel,
+        treat = "TDDS_p_z",
+        mediator = "GENE_p_z",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results of the mediation analysis
+summary(H2_mediate_results_rel)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs, pathogen disgust, but not out-group avoidance, is significantly positively related to religiosity.
+
+    -   The coefficients: for pathogen disgust (.32) and out-group avoidance (-.07).
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is no significant indirect effect of pathogen disgust on religiosity through out-group avoidance (*B* = -.004, *BCI* = \[-.023, .02\]).
+
+    -   This result is inconsistent with both the weak and strong version version of Hypothesis 2. That is, there is no evidence here that the relationship between pathogen disgust and religiosity is mediated by out-group avoidance, even if only assessing religious participants.
+
+## Hypothesis 3: Religious Subgroup Analyses
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test Hypothesis 3, we must first establish that pathogen disgust affects one's mating strategy (i.e., make it more monogamous; as measured by more restricted sociosexuality; `SOI_a_r_z`) and that a monogamous mating strategy influences religiosity.
+
+```{r}
+# Fitting the models
+H3_M1_rel <- lm(SOI_a_r_z ~ TDDS_p_z, data = data_rel)
+H3_M2_rel <- lm(CRS_z ~ SOI_a_r_z, data = data_rel)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H3_M1_rel, which = 1) # For model 1
+    plot(H3_M2_rel, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for the either model.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H3_M1_rel)) # For model 1
+    hist(residuals(H3_M2_rel)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(H3_M1_rel))
+    qqline(residuals(H3_M1_rel), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(H3_M2_rel))
+    qqline(residuals(H3_M2_rel), col = "red")
+    ```
+
+    -   **Both Models:**
+
+        -   The QQ-plots for both models do not indicate that the residuals are normally distributed.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictor for both models.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$TDDS_p_z, data_rel$SOI_a_r_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Pathogen Disgust",
+     ylab = "Restricted Sociosexual Attitudes",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H3_M1_rel, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+SOI_a_r_z <- as.numeric(data_rel$SOI_a_r_z)
+TDDS_p_z <- as.numeric(data_rel$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H3_M1_rel <- Boot(H3_M1_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H3_M1_rel) # Getting the coefficients
+confint(boot_H3_M1_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(SOI_a_r_z, TDDS_p_z)
+```
+
+-   We can see from the Scatter Plot that there is a positive relationship between pathogen disgust and restricted sociosexual attitudes.
+
+-   Based on the estimates, the standardized coefficient for pathogen disgust is around .19.
+
+    -   In addition, this relationship is significant, as the BCI excludes zero (upper = .35, lower = .03).
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data_rel$SOI_a_r_z, data_rel$CRS_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Restricted Sociosexual Attitudes",
+     ylab = "Religiosity (CRS)",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(H3_M2_rel, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+SOI_a_r_z <- as.numeric(data_rel$SOI_a_r_z)
+CRS_z <- as.numeric(data_rel$CRS_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H3_M2_rel <- Boot(H3_M2_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H3_M2_rel) # Getting the coefficients
+confint(boot_H3_M2_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(SOI_a_r_z, CRS_z)
+```
+
+-   We can see from the Scatter Plot that there is a positive trend in the relationship between restricted sociosexual attitudes and religiosity.
+
+-   Based on the estimates, the standardized coefficient for restricted sociosexual attitudes is around .38.
+
+    -   In addition, this relationahip is significant, as the BCI excludes zero (upper = .54, lower = .22).
+
+### Full Mediation Model
+
+The fact that pathogen disgust predicts a monogamous mating strategy and, in turn, a monogamous mating strategy predicts religiosity indicates that a monogamous mating strategy could potentially mediate the relationship between pathogen disgust and religiosity. Now we will run the mediation analysis.
+
+```{r}
+# Fitting the full mediation model
+H3_full_rel <- lm(CRS_z ~ TDDS_p_z + SOI_a_r_z, data = data_rel)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(H3_full_rel, which = 1)
+    ```
+
+    -   There is a slight trend towards more negative residual values at the higher fitted values of the model. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(H3_full_rel))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(H3_full_rel))
+    qqline(residuals(H3_full_rel), col = "red")
+    ```
+
+    -   The histogram and QQ-plot of the residuals of the model indicate that the residuals are not normally distributed. That is, there is a tendency for higher frequencies of residuals at both just below the mean and just below 1 SD.
+
+        -   Because of this failure of this assumption, we will conduct a bootstrapped test of the predictors for the model.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(H3_full_rel)
+    ```
+
+    -   The VIF is good here.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+SOI_a_r_z <- as.numeric(data_rel$SOI_a_r_z)
+CRS_z <- as.numeric(data_rel$CRS_z)
+TDDS_p_z <- as.numeric(data_rel$TDDS_p_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_H3_full_rel <- Boot(H3_full_rel, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_H3_full_rel) # Getting the coefficients
+confint(boot_H3_full_rel) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(SOI_a_r_z, CRS_z, TDDS_p_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+H3_mediate_results_rel <- mediate(model.m = H3_M1_rel,
+        model.y = H3_full_rel,
+        treat = "TDDS_p_z",
+        mediator = "SOI_a_r_z",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results of the mediation analysis
+summary(H3_mediate_results_rel)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs, both pathogen disgust and restricted sociosexual attitudes are significantly positively related to religiosity, with the unique effect of restricted sociosexual attitudes being substantially larger (*B* = .334, *BCI* =\[.173, .501\]) than the unique effect of pathogen disgust (*B* = .246, *BCI* = \[.083, .403\]).
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is a significant indirect effect of pathogen disgust on religiosity through a monogamous mating strategy (*B* = .067, *BCI* = \[.013, .13\]).
+
+        -   Given this result, we have evidence for the weak version of Hypothesis 3. That is, the relationship between pathogen disgust and religiosity is partially mediated by a monogamous mating strategy, including when only religious individuals are included in the analysis.
+
+    -   The proportion of the total effect mediated (the ratio of the indirect effect to the direct effect) is .21. That is, 21% of the covariance between pathogen disgust and religiosity seems to be able to be accounted for by restricted sociosexual attitudes. Our inferential criterion for concluding full mediation was that this ratio would be at least .80, with the total effect greater than a *B* = .2. Even the upper bound of the bootstrapped confidence interval for this proportion mediated does not cross this threshold (*BCI* = \[.044, .54\]).
+
+        -   Given this result, we do not have evidence for the strong version of Hypothesis 3. That is, the relationship between pathogen disgust and religiosity is not fully mediated by a monogamous mating strategy, including when only religious individuals are included.
+
+Ultimately, the results of including only religious individuals in the analysis support the results thus far. They are in line with the weak version of the sexual strategies hypothesis only. In addition, the proportion mediated is slightly smaller when analyzing only religious individuals (21% vs. 34%). This suggests that while the sexual strategies hypothesis may explain some differences in religiosity between religious people, it is better at explaining individual differences in religiosity including those that are not explicitly religious. This may simply be a feature of restricted range, or it may suggest that the sexual strategies hypothesis can explain both why religious people differ in their "devotion" and why some people are religious and others are not.
+
+## Sexual Disgust, Sociosexual Attitudes, and Traditionalism (SST Model)
+
+BIS reactivity may encourage traditional cultural values (like religion) as a means of mitigating social behaviors (like sex) that are more likely to result in the spread of infectious disease. We have focused thus far on religion in this analysis as the cultural value influenced by BIS reactivity and the specific mechanisms through which this may be the case. We will now analyze whether sociosexual attitudes mediate the relation between sexual disgust and traditionalism.
+
+## Testing the Baseline Model
+
+We will first test the baseline model where we regress the dependent variable (`CONV_f_z`) on the independent variable (`TDDS_s_z`), because each mediation analysis requires that there is a significant positive relationship between these variables. We will also test each of the assumptions. We will first need to create the `TDDS_s_z` variable by standardizing `TDDS_s`.
+
+```{r}
+# Creating the standardized sexual disgust variable
+data$TDDS_s_z <- scale(data$TDDS_s)
+  # Ensure it is numeric so the boot function will run
+data$TDDS_s_z <- as.numeric(data$TDDS_s_z)
+
+# Fitting the model
+baseline_model_SST <- lm(CONV_f_z ~ TDDS_s_z, data = data)
+```
+
+### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(baseline_model_SST, which = 1)
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(baseline_model_SST))
+
+    # QQ-plot for normality of residuals
+    qqnorm(residuals(baseline_model_SST))
+    qqline(residuals(baseline_model_SST), col = "red")
+    ```
+
+    -   The histogram of the residuals of the model indicate that the residuals are normally distributed.
+
+3.  **Multicollinearity:** Not applicable becuase only one predictor
+
+### Summarizing the Model
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$TDDS_s_z, data$CONV_f_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Sexual Disgust",
+     ylab = "Traditionalism",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(baseline_model_SST, col = "black", lwd = 1)
+
+# Summarizing the model
+summary(baseline_model_SST)
+```
+
+-   We can see from the Scatter Plot that there is a slight positive relationship between sexual disgust and religiosity.
+
+-   Based on the estimates, the (significant) standardized coefficient for sexual disgust is around .131 (*p* = .026).
+
+This shows that the IV effects the DV, as in the second regression equation for testing mediation in @baron1986. To establish mediation, we will still need to establish that the IV affects the mediator and the mediator affects the DV. Before we test the indirect effect and proportion of variance explained by each effect for each mediation model, we will run these two models.
+
+### Preliminary Simple Linear Regression Models
+
+As mentioned above, to test our mediaiton model, we must first establish that sexual disgust affects sociosexual attitudes (i.e., `SOI_a_r_z`) and that sociosexual attitudes influences traditionalism.
+
+```{r}
+# Fitting the models
+SST_M1 <- lm(SOI_a_r_z ~ TDDS_s_z, data = data)
+SST_M2 <- lm(CONV_f_z ~ SOI_a_r_z, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(SST_M1, which = 1) # For model 1
+    plot(SST_M2, which = 1) # For model 2
+    ```
+
+    -   The residuals vs. fitted plot does not stand out as violating the assumption of linearity or heteroscedasticity for the second model, but there is a trend towards more negative residual values at the higher fitted values of the model for model 1. This may be problematic.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(SST_M1)) # For model 1
+    hist(residuals(SST_M2)) # For model 2
+
+    # QQ-plot for normality of residuals of Model 1
+    qqnorm(residuals(SST_M1))
+    qqline(residuals(SST_M1), col = "red")
+
+    # QQ-plot for normality of residuals of Model 2
+    qqnorm(residuals(SST_M2))
+    qqline(residuals(SST_M2), col = "red")
+    ```
+
+    -   **Both Models:**
+
+        -   The histogram and QQ-plot suggest that the residuals are relatively normally distributed for both models.
+
+    -   We will conduct bootstrapping for Model 1 because of the ambivalent residuals plot above.
+
+3.  **Multicollinearity:** Not applicable because each model only has one predictor.
+
+#### Summarizing the Models
+
+##### Model 1
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$TDDS_s_z, data$SOI_a_r_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Restricted Sociosexual Attitudes",
+     ylab = "Sexual Disgust",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(SST_M1, col = "black", lwd = 1)
+
+# Adding the variables to the broader environment so the Boot function will run
+SOI_a_r_z <- as.numeric(data$SOI_a_r_z)
+TDDS_s_z <- as.numeric(data$TDDS_s_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_SST_M1 <- Boot(SST_M1, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_SST_M1) # Getting the coefficients
+confint(boot_SST_M1) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(SOI_a_r_z, TDDS_s_z)
+```
+
+-   We can see from the Scatter Plot that there is a strong positive relationship between sexual disgust and restricted sociosexual attitudes (*B* = .588, *BCI* = \[.491, .679\]).
+
+##### Model 2
+
+```{r}
+# Create a scatterplot with the regression line to visualize
+plot(data$SOI_a_r_z, data$CONV_f_z,
+     main = "Scatter Plot with Linear Regression Line",
+     xlab = "Restricted Sociosexual Attitudes",
+     ylab = "Traditionalism",
+     pch = 16, # For solid circle points
+     col = "black")
+# Add regression line
+abline(SST_M2, col = "black", lwd = 1)
+
+# Summarizing the model
+summary(SST_M2)
+```
+
+-   We can see from the Scatter Plot that there is a slight positive relationship between sociosexual attitudes and traditionalism.
+
+    -   This relationship is significant (*B* = .15, *t*(287) = 2.571, *p* = .011).
+
+### Full Mediation Model
+
+```{r}
+# Fitting the full mediation model
+SST_full <- lm(CONV_f_z ~ TDDS_s_z + SOI_a_r_z, data = data)
+```
+
+#### Assumptions
+
+1.  **Linearity and Heteroscedasticity:** Assessed visually through plotting residual vs. fitted values
+
+    ```{r}
+    # Plotting the residual vs. fitted values
+    plot(SST_full, which = 1)
+    ```
+
+    -   The plot looks good.
+
+2.  **Normality:** Histogram and QQ-plot (because Shapiro-Wilk test would be overpowered)
+
+    ```{r}
+    # Histogram for normality of residuals
+    hist(residuals(SST_full))
+
+    # QQ-plot for normality of residuals of the full model
+    qqnorm(residuals(SST_full))
+    qqline(residuals(SST_full), col = "red")
+    ```
+
+    -   The histogram looks good.
+
+3.  **Multicollinearity:** Variance Inflation Factor (VIF) from `car` package
+
+    ```{r}
+    # Calculating VIF
+    vif(SST_full)
+    ```
+
+    -   The VIF is higher in this model than all previous models due to the correlation between sexual disgust and restricted sociosexual attitudes. However, it is within an acceptable range for our analysis.
+
+#### Summarizing and Testing for Partial/Full Mediation
+
+```{r}
+# Adding the variables to the broader environment so the Boot function will run
+CONV_f_z <- as.numeric(data$CONV_f_z)
+TDDS_s_z <- as.numeric(data$TDDS_s_z)
+SOI_a_r_z <- as.numeric(data$SOI_a_r_z)
+
+# Setting the seed
+set.seed(1042557)
+
+# Getting the bootstrapped estimates and CIs (using car package rather than boot for simplicity)
+boot_SST_full <- Boot(SST_full, R = 1000) # 1,000 resamples
+
+# Summarizing the estimates and CIs
+summary(boot_SST_full) # Getting the coefficients
+confint(boot_SST_full) # Getting the BCIs
+
+# Removing the vectors in the environment that the Boot package required outside of the data.frame
+rm(CONV_f_z, TDDS_s_z, SOI_a_r_z)
+
+# Using the mediate function from the mediation package to estimate the indirect effect with 95% bootstrapped confidence intervals
+SST_mediate_results <- mediate(model.m = SST_M1,
+        model.y = SST_full,
+        treat = "TDDS_s_z",
+        mediator = "SOI_a_r_z",
+        boot = TRUE, # Bootstrap the CI for the indirect effect
+        sims = 1000) # Do 1000 resamples
+
+# Printing the results for the mediation analysis
+summary(SST_mediate_results)
+```
+
+-   **Multiple Regression Results:**
+
+    -   Based on the bootstrapped CIs containing zero, neigher sexual disgust nor restricted sociosexual attitudes are significantly positively related to traditionalism.
+
+    -   The coefficients for sexual disgust (.065) and sociosexual attitudes (.112) are quite small.
+
+-   **Mediation Analysis Results:**
+
+    -   The ACME indicates that there is no significant indirect effect of sexual disgust on traditionalism through restricted sociosexual atitudes (*B* = .066, *BCI* = \[-.02, .15\]).
+
+Even though the proportion mediated is high (50%), it seems that the lack of a relationship between the predictors (over and above one another) and traditionalism means that this large estimated proportion mediated is not reliable.
+
+## Relating Pathogen Disgust and Religiosity After Removing Regional Differences
+
+To attempt to remove the effect of national levels of religiosity and disgust sensitivity from influencing the relationship between disgust and religiosity at the individual level, we will see if we can isolate the individual effect by running a multi-level model with random intercepts. This will account for mean levels of religiosity and isolate individual-level effects from their confounding influence. However, we do not have enough participants in most countries to do this at the country level. Therefore, I will split the nationalities into world region groups. This is admittedly a compromise move, because using national-level groupings would be better. In addition, for many nations, there is not an obvious world region given a lack of representation of participants in countries of those regions. For example, I will exclude participants in areas around the Asia Pacific and participants in South America. We have such nationalities in this sample, but there are too few participants in these regions to justify including them. The grouping that I could come up with that maximizes the number of people in each group while retaining regional coherency was a three-group division: (1) Europe (*n* = 104), (2) North America (*n* = 86), and (3) Africa and the Middle East (*n* = 59). We will split participants up into these regions based on their nationality and fit a multi-level model with a random intercept of region. This will allow us to isolate the individual influence of disgust and religiosity without these three regions' influence on religiosity scores.
+
+```{r}
+# Load necessary packages
+library(lme4) # For fitting the multi-level model
+library(sjPlot)      # For visualization
+
+# Assign regions based on nationality
+MLM_data_region <- data %>%
+  mutate(region = case_when(
+    nationality %in% c("Canada", "United States", "Mexico") ~ "North America",
+    nationality %in% c("Belgium", "Austria", "Czech Republic", "Finland", "France", 
+                       "Germany", "Greece", "Hungary", "Ireland", "Italy", "Poland", 
+                       "Portugal", "Romania", "Slovakia", "Spain", "Sweden", 
+                       "United Kingdom") ~ "Europe",
+    nationality %in% c("Algeria", "Egypt", "Eritrea", "Ghana", "Kenya", 
+                       "South Africa", "Saudi Arabia", "Tunisia", "Zimbabwe") ~ "Africa & Middle East",
+    TRUE ~ NA_character_
+  ))
+
+MLM_data_region <- MLM_data_region %>% 
+  filter(!is.na(region))
+
+# Fit the multilevel model with standardized variables and region as random intercept
+MLM_disg_rel_region <- lmer(
+  CRS_z ~ TDDS_p_z + (1 | region),
+  data = MLM_data_region,
+  REML = FALSE
+)
+
+# Fixed effects plot
+sjPlot::plot_model(MLM_disg_rel_region, type = "pred", terms = "TDDS_p_z")
+
+# Random effects plot
+sjPlot::plot_model(MLM_disg_rel_region, type = "re")
+
+# Faceted scatter plot
+ggplot(MLM_data_region, aes(x = TDDS_p_z, y = CRS_z)) +
+  geom_point(alpha = 0.3, color = "darkblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  facet_wrap(~ region) +
+  theme_minimal() +
+  labs(title = "Standardized Disgust Sensitivity vs. Religiosity Across Regions",
+       x = "Standardized Disgust Sensitivity",
+       y = "Standardized Religiosity")
+
+
+```
+
+-   Looking at the fixed effects plot, we can see that the general tendency is for disgust sensitivity to positively predict religiosity.
+
+-   Looking at the random intercepts, we can see that while North America and Europe are similar in their levels of religiosity at their mean of disgust sensitivity, Africa and the Middle East is quite high. It is about .75 SD above the mean whereas Europe and North America are about .7 and .3 SD below the mean.
+
+    -   This may represent the concern of Reviewer 2, where countries with higher mean levels of religiosity and disgust sensitivity (e.g. those in the Middle East and Africa) may bias the individual-level results.
+
+-   Looking at the faceted scatter plots, it looks like there is a far more distinct positive relationship in Europe—and to a lesser degree in North America—than in Africa and the Middle East between disgust sensitivity and religiosity.
+
+    -   This may partially be due to restricted range, as the relationship within Africa and the Middle East may be constricted by not having enough range in the religiosity scale towards the higher end. The points seem to cluster towards the top of the graph for Africa and the Middle East.
+
+Before moving on to summarizing and testing our model parameter, we will first test some assumptions.
+
+#### Assumptions
+
+Here we will test the assumptions of homogeneity of variance and normality of residuals for the model by plotting the residuals vs. the fitted values and a histogram and QQ-plot.
+
+```{r}
+# Plotting the residual vs. fitted values
+plot(MLM_disg_rel_region, which = 1)
+
+# Histogram for normality of residuals
+hist(residuals(MLM_disg_rel_region))
+
+# QQ-plot for normality of residuals
+qqnorm(residuals(MLM_disg_rel_region))
+qqline(residuals(MLM_disg_rel_region), col = "red")
+
+```
+
+-   The residuals vs. fitted values shows two clusters of residuals at the high and low and of the scale, and they are consistent with large differences in religiosity in our three regions. That is, the cluster on the high end of the scale should be Africa and the Middle East. The cluster on the low end of the scale should represent the United States and Europe. This may be a problem for inference, so we will conduct a bootstrapped test of the fixed effect of disgust sensitivity on religiosity.
+
+-   The histogram and QQ-plot look pretty good.
+
+#### Model Inference
+
+Now we will conduct a bootstrapped test of the fixed effect of disgust sensitivity on religiosity.
+
+```{r}
+# Set seed for reproducibility
+set.seed(1042557)
+
+# Function to extract fixed effects
+fixef_fun <- function(model) {
+  fixef(model)
+}
+
+# Perform bootstrapping
+boot_results_MLM_disg_rel_region <- bootMer(
+  MLM_disg_rel_region,
+  FUN = fixef_fun,
+  nsim = 1000,
+  type = "parametric",
+  cl = cl,
+  seed = 1042557
+)
+
+# Calculate 95% confidence intervals
+boot_conf_interval_MLM_disg_rel_region <- apply(boot_results_MLM_disg_rel_region$t, 2, quantile, probs = c(0.025, 0.975), na.rm = TRUE)
+
+# Convert to a more readable format
+boot_conf_interval_MLM_disg_rel_region <- as.data.frame(boot_conf_interval_MLM_disg_rel_region)
+rownames(boot_conf_interval_MLM_disg_rel_region) <- c("2.5%", "97.5%")
+
+# View the estimates and BCI for fixed effect
+summary(MLM_disg_rel_region)
+print(boot_conf_interval_MLM_disg_rel_region)
+```
+
+-   We can see that the random intercept of region accounts for a large amount of variance in religiosity. That is, 44% of the variance in religiosity is attributable to the mean level of religiosity within the region.
+
+-   However, we can also see that individual disgust sensitivity still is a very marginally significant predictor of religiosity, albeit a smaller size (*B* = .100, *BCI* = \[.200, -.00003\].
+
+Ultimately this analysis suggests that while the relationship between disgust and religiosity may be non-zero, it is being inflated by the presence of Africa and the Middle East in the sample. Similarly, however, the relationship between disgust sensitivy and religiosity appears to be closer to *B* = 0 within Africa and the Middle East due to restricted range. This suggests that the relationship in Europe and North America may be higher even if accounting for regional variation. To explore the data further, I will fit a similar model, but this time only with North America and Europe as regions.
+
+## Relating Pathogen Disgust and Religiosity in the West
+
+```{r}
+# Assign regions based on nationality
+MLM_data_west <- data %>%
+  mutate(region = case_when(
+    nationality %in% c("Canada", "United States", "Mexico") ~ "North America",
+    nationality %in% c("Belgium", "Austria", "Czech Republic", "Finland", "France", 
+                       "Germany", "Greece", "Hungary", "Ireland", "Italy", "Poland", 
+                       "Portugal", "Romania", "Slovakia", "Spain", "Sweden", 
+                       "United Kingdom") ~ "Europe",
+    TRUE ~ NA_character_
+  ))
+
+MLM_data_west <- MLM_data_west %>% 
+  filter(!is.na(region))
+
+# Fit the multilevel model with standardized variables and region as random intercept
+MLM_disg_rel_west <- lmer(
+  CRS_z ~ TDDS_p_z + (1 | region),
+  data = MLM_data_west,
+  REML = FALSE
+)
+
+# Fixed effects plot
+sjPlot::plot_model(MLM_disg_rel_west, type = "pred", terms = "TDDS_p_z")
+
+# Random effects plot
+sjPlot::plot_model(MLM_disg_rel_west, type = "re")
+
+# Faceted scatter plot
+ggplot(MLM_data_west, aes(x = TDDS_p_z, y = CRS_z)) +
+  geom_point(alpha = 0.3, color = "darkblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  facet_wrap(~ region) +
+  theme_minimal() +
+  labs(title = "Standardized Disgust Sensitivity vs. Religiosity Across Regions",
+       x = "Standardized Disgust Sensitivity",
+       y = "Standardized Religiosity")
+
+
+```
+
+-   Looking at the fixed effects plot, we can see that the general tendency is for disgust sensitivity to positively predict religiosity.
+
+-   Looking at the random intercepts, we can see that while North America and Europe are similar in their levels of religiosity at their mean of disgust sensitivity, with North America being slightly more religious.
+
+-   Looking at the faceted scatter plots,the relationships look similar to the previous plots. There appears to be a positive relationship in both Europe and North America.
+
+Before moving on to summarizing and testing our model parameter, we will first test some assumptions.
+
+#### Assumptions
+
+Here we will test the assumptions of homogeneity of variance and normality of residuals for the model by plotting the residuals vs. the fitted values and a histogram and QQ-plot.
+
+```{r}
+# Plotting the residual vs. fitted values
+plot(MLM_disg_rel_west, which = 1)
+
+# Histogram for normality of residuals
+hist(residuals(MLM_disg_rel_west))
+
+# QQ-plot for normality of residuals
+qqnorm(residuals(MLM_disg_rel_west))
+qqline(residuals(MLM_disg_rel_west), col = "red")
+
+```
+
+-   The residuals vs. fitted values doesn't show much of an issue. There may be more extreme positive residual values and more negative residual values in general. There may also be a slight tendency for residuals to be more negatively extreme towards the positive end of the fitted values. However, there are no glaring patterns indicating a failure of assumptions.
+
+-   The histogram and QQ-plot look pretty skewed, so we will do a bootstrap inference for the parameter.
+
+#### Model Inference
+
+Now we will conduct a bootstrapped test of the fixed effect of disgust sensitivity on religiosity.
+
+```{r}
+# Set seed for reproducibility
+set.seed(1042557)
+
+# Function to extract fixed effects
+fixef_fun <- function(model) {
+  fixef(model)
+}
+
+# Perform bootstrapping
+boot_results_MLM_disg_rel_west <- bootMer(
+  MLM_disg_rel_west,
+  FUN = fixef_fun,
+  nsim = 1000,
+  type = "parametric",
+  cl = cl,
+  seed = 1042557
+)
+
+# Calculate 95% confidence intervals
+boot_conf_interval_MLM_disg_rel_west <- apply(boot_results_MLM_disg_rel_west$t, 2, quantile, probs = c(0.025, 0.975), na.rm = TRUE)
+
+# Convert to a more readable format
+boot_conf_interval_MLM_disg_rel_west <- as.data.frame(boot_conf_interval_MLM_disg_rel_west)
+rownames(boot_conf_interval_MLM_disg_rel_west) <- c("2.5%", "97.5%")
+
+# View the estimates and BCI for fixed effect
+summary(MLM_disg_rel_west)
+print(boot_conf_interval_MLM_disg_rel_west)
+```
+
+-   We can see that the random intercept of region accounts for very little variance in religiosity in this model. Only 0.8% of the variance in religiosity is attributable to the mean level of religiosity within the region.
+
+-   We can also see that individual disgust sensitivity now a slightly larger predictor of religiosity and is significant (*B* = .122, *BCI* = \[.241, .008\].
+
+This analysis suggests that the relationship between disgust and religiosity in Europe and North America is more robust. This may suggest a relationship between disgust and religiosity that is specific to Christian cultures, because Europe and North America tend to be Christian.
+
 # Saving Data
 
 Now we will save the final version of the data frame (`data`) as a `data/final_data.csv`.

@@ -378,6 +378,7 @@ data.unclean <- data.unclean %>%
 
 # Remove observations with NA values for crutial variables
 data.unclean <- data.unclean %>%
+  arrange(nationality) %>% 
   filter(complete.cases(CRS, TDDS_p, SOI_a, GENE_p, CONV_f))
 
 # Make the data frame data instead of data.unclean

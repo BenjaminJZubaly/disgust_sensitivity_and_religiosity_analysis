@@ -399,4 +399,122 @@ references:
   type: article-journal
   URL: "https://twu.idm.oclc.org/login?url=https://search.ebscohost.com/login.aspx?direct=true&db=psyh&AN=1987-13085-001&site=ehost-live&scope=site"
   volume: 51
+- id: vanleeuwen2023
+  accessed: "22:21:14"
+  author:
+  - family: Leeuwen
+    given: Florian
+    non-dropping-particle: van
+  - family: Inbar
+    given: Yoel
+  - family: Petersen
+    given: Michael Bang
+  - family: Aarøe
+    given: Lene
+  - family: Barclay
+    given: Pat
+  - family: Barlow
+    given: Fiona Kate
+  - family: Barra
+    given: Mícheál
+    non-dropping-particle: de
+  - family: Becker
+    given: D. Vaughn
+  - family: Borovoi
+    given: Leah
+  - family: Choi
+    given: Jongan
+  - family: Consedine
+    given: Nathan S.
+  - family: Conway
+    given: Jane Rebecca
+  - family: Conway
+    given: Paul
+  - family: Adoric
+    given: Vera Cubela
+  - family: Demirci
+    given: Ekin
+  - family: Fernández
+    given: Ana María
+  - family: Ferreira
+    given: Diogo Conque Seco
+  - family: Ishii
+    given: Keiko
+  - family: Jakšić
+    given: Ivana
+  - family: Ji
+    given: Tingting
+  - family: Jonaityte
+    given: Inga
+  - family: Lewis
+    given: David M. G.
+  - family: Li
+    given: Norman P.
+  - family: McIntyre
+    given: Jason C.
+  - family: Mukherjee
+    given: Sumitava
+  - family: Park
+    given: Justin H.
+  - family: Pawlowski
+    given: Boguslaw
+  - family: Pizarro
+    given: David
+  - family: Prokop
+    given: Pavol
+  - family: Prodromitis
+    given: Gerasimos
+  - family: Rantala
+    given: Markus J.
+  - family: Reynolds
+    given: Lisa M.
+  - family: Sandin
+    given: Bonifacio
+  - family: Sevi
+    given: Barış
+  - family: Srinivasan
+    given: Narayanan
+  - family: Tewari
+    given: Shruti
+  - family: Yong
+    given: Jose C.
+  - family: Žeželj
+    given: Iris
+  - family: Tybur
+    given: Joshua M.
+  container-title: Group Processes & Intergroup Relations
+  DOI: 10.1177/13684302211067151
+  ISSN: 1368-4302
+  issue: 3
+  issued: 2023-04-01
+  key: YABI47DM
+  language: en
+  libraryID: 1
+  page: 629-651
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  Publisher: SAGE
+  source: SAGE Journals
+  title: Disgust sensitivity relates to attitudes toward gay men and
+    lesbian women across 31 nations
+  type: article-journal
+  URL: "https://doi.org/10.1177/13684302211067151"
+  volume: 26
+- id: leeuwen2020
+  accessed: "19:47:34"
+  author:
+  - dropping-particle: van
+    family: Leeuwen
+    given: Florian
+  - family: Tybur
+    given: Joshua M.
+  issued: 2020-06-04
+  key: CGAJYHYG
+  language: en
+  libraryID: 1
+  providerKey: 2509FBBE-5BB0-44C4-B119-6083A81ED673
+  Publisher: OSF
+  source: osf.io
+  title: Cross-cultural project on disgust sensitivity
+  type: article-journal
+  URL: "https://osf.io/bax8r/"
 ...
